@@ -461,14 +461,11 @@ NEW JOBS (Title + Company)
         body += f"\n📌 {source}\n"
         body += "-" * 70 + "\n"
         
-        for i, job in enumerate(jobs[:20], 1):  # Limit to 20 per source
+        for i, job in enumerate(jobs, 1):  # Show ALL jobs
             body += f"{i}. {job['title']} + {job['company']}\n"
             body += f"   Location: {job['location']}\n"
             body += f"   Salary: {job['salary']}\n"
             body += f"   Apply: {job['url']}\n\n"
-        
-        if len(jobs) > 20:
-            body += f"   ... and {len(jobs) - 20} more from {source}\n\n"
     
     body += f"\n{'='*70}\n"
     body += f"Total new opportunities: {summary['new_jobs_count']}\n"
