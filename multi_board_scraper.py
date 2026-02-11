@@ -498,14 +498,15 @@ if __name__ == "__main__":
     JOB_TITLES = [
         "Digital Product Owner",
         "Product Marketing Manager",
-        "Growth Product Manager",
         "Digital Marketing Manager",
-        "Scrum Product Owner",
         "Technical Product Manager",
-        "E-commerce Manager",
         "Product Owner Digital Channels",
         "Marketing Technology Product Owner",
-        "Growth Architect"
+        "Web Content Manager",
+        "Content Strategist",
+        "Web Marketing Manager",
+        "SEO Manager",
+        "AEM Content Author"
     ]
     
     RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", "your-email@example.com")
