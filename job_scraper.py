@@ -4,7 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
-import os
+import os 
 
 print("="*60)
 print("JOB SCRAPER FOR COURTNEY - WILLOW GROVE, PA")
