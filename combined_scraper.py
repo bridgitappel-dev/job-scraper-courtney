@@ -41,7 +41,7 @@ class CombinedJobScraper:
         for search_config in searches:
             print(f"\nSearching: {search_config}")
             
-            for page in range(2):  # 2 pages = 40 jobs per search
+            for page in range(2):
                 try:
                     params = {**search_config, "page": page, "descending": True}
                     response = requests.get(base_url, params=params, timeout=10)
@@ -65,13 +65,13 @@ class CombinedJobScraper:
                             "location": location_str or "Not specified",
                             "posted_date": job.get("publication_date", ""),
                             "url": job.get("refs", {}).get("landing_page", ""),
-                            "description": job.get("contents", "")[:500],  # First 500 chars
+                            "description": job.get("contents", "")[:500],
                             "source": "The Muse"
                         }
                         all_jobs.append(parsed)
                     
                     print(f"  Page {page}: Found {len(jobs)} jobs")
-                    time.sleep(0.5)  # Be nice to the API
+                    time.sleep(0.5)
                     
                 except Exception as e:
                     print(f"  Error on page {page}: {e}")
@@ -105,7 +105,7 @@ class CombinedJobScraper:
         for search_config in searches:
             print(f"\nSearching: {search_config}")
             
-            for page in range(1, 3):  # 2 pages = 100 jobs per search
+            for page in range(1, 3):
                 try:
                     url = f"{base_url}/{page}"
                     params = {
@@ -169,14 +169,11 @@ class CombinedJobScraper:
         print("="*60)
         print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         
-        # Scrape both sources
         muse_jobs = self.scrape_muse()
         adzuna_jobs = self.scrape_adzuna()
         
-        # Combine
         all_jobs = muse_jobs + adzuna_jobs
         
-        # Remove duplicates (same title + company)
         unique_jobs = {}
         for job in all_jobs:
             key = f"{job['title']}_{job['company']}".lower()
@@ -198,7 +195,6 @@ class CombinedJobScraper:
     def filter_and_save(self, jobs: List[Dict]) -> List[Dict]:
         """Filter jobs by keywords and save"""
         
-        # Keywords to look for
         include_keywords = [
             "product manager", "product management", "pm",
             "roadmap", "platform", "technical product"
@@ -221,20 +217,17 @@ class CombinedJobScraper:
         
         print(f"\n🎯 After keyword filtering: {len(filtered)} jobs")
         
-        # Save to file
         output_file = f"daily_jobs_{datetime.now().strftime('%Y%m%d')}.json"
         with open(output_file, 'w') as f:
             json.dump(filtered, f, indent=2)
         
         print(f"💾 Saved to: {output_file}")
         
-        # Also save to the standard filename for the application agent
         with open("daily_jobs.json", 'w') as f:
             json.dump(filtered, f, indent=2)
         
         print(f"💾 Also saved to: daily_jobs.json (for application agent)")
         
-        # Print samples
         if filtered:
             print("\n📋 SAMPLE JOBS:")
             print("="*60)
@@ -252,7 +245,6 @@ class CombinedJobScraper:
     def send_email(self, jobs: List[Dict]) -> bool:
         """Send email alert with job results"""
         
-        # Get email configuration from environment
         smtp_server = os.getenv('SMTP_SERVER')
         smtp_port = int(os.getenv('SMTP_PORT', '587'))
         sender_email = os.getenv('SENDER_EMAIL')
@@ -268,10 +260,8 @@ class CombinedJobScraper:
         print("="*60)
         
         try:
-            # Create email content
             subject = f"🎯 Daily Job Alert - {len(jobs)} Product Manager Jobs Found"
             
-            # HTML email body
             html_body = f"""
             <html>
             <head>
@@ -300,7 +290,6 @@ class CombinedJobScraper:
                 <h2>Top Matches:</h2>
             """
             
-            # Add top 10 jobs
             for i, job in enumerate(jobs[:10], 1):
                 salary_info = f"<p><strong>Salary:</strong> {job['salary']}</p>" if job.get('salary') else ""
                 
@@ -330,17 +319,14 @@ class CombinedJobScraper:
             </html>
             """
             
-            # Create message
             message = MIMEMultipart('alternative')
             message['Subject'] = subject
             message['From'] = sender_email
             message['To'] = ', '.join(recipient_emails)
             
-            # Add HTML content
             html_part = MIMEText(html_body, 'html')
             message.attach(html_part)
             
-            # Send email
             with smtplib.SMTP(smtp_server, smtp_port) as server:
                 server.starttls()
                 server.login(sender_email, sender_password)
@@ -357,20 +343,15 @@ class CombinedJobScraper:
 def main():
     """Main function"""
     
-    # Get Adzuna credentials from environment (optional)
     adzuna_id = os.getenv("ADZUNA_APP_ID")
     adzuna_key = os.getenv("ADZUNA_APP_KEY")
     
-    # Create scraper
     scraper = CombinedJobScraper(adzuna_id, adzuna_key)
     
-    # Scrape all sources
     jobs = scraper.scrape_all()
     
-    # Filter and save
     filtered = scraper.filter_and_save(jobs)
     
-    # Send email alert
     if filtered:
         scraper.send_email(filtered)
     else:
